@@ -1,0 +1,6 @@
+{
+  "yaml.schemas": {},
+  "[yaml]": {
+    "editor.formatOnSave": false
+  }
+}
