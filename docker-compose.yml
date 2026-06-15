@@ -11,5 +11,17 @@ services:
       - "5434:5432"
     volumes:
       - blog_postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    container_name: blog_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --save "" --appendonly no
+    volumes:
+      - blog_redis_data:/data
+
 volumes:
   blog_postgres_data:
+  blog_redis_data:

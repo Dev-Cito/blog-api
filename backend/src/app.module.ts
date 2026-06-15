@@ -13,6 +13,7 @@ import { PostsModule } from './posts/posts.module';
 import { CategoriesModule } from './categories/categories.module';
 import { TagsModule } from './tags/tags.module';
 import { envValidationSchema } from './config/env.validation';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { envValidationSchema } from './config/env.validation';
       }),
     }),
     ThrottlerModule.forRoot([{ name: 'default', ttl: 60000, limit: 100 }]),
+    RedisModule,
     AuthModule,
     UsersModule,
     PostsModule,

@@ -6,14 +6,20 @@ import { Throttle } from '@nestjs/throttler';
 import { Response } from 'express';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
+import { TokenBlacklistService } from './token-blacklist.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
+const ONE_DAY_SECONDS = 24 * 60 * 60;
+
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private tokenBlacklistService: TokenBlacklistService,
+  ) {}
 
   @Post('register')
   @Throttle({ default: { ttl: 60000, limit: 5 } })
@@ -45,7 +51,12 @@ export class AuthController {
   @ApiBearerAuth('JWT-auth')
   @HttpCode(200)
   @ApiOperation({ summary: 'Logout' })
-  logout(@Res({ passthrough: true }) res: Response) {
+  async logout(@Request() req, @Res({ passthrough: true }) res: Response) {
+    const { jti } = req.user as { jti: string };
+    if (jti) {
+      await this.tokenBlacklistService.blacklist(jti, ONE_DAY_SECONDS);
+    }
+
     const isProduction = process.env.NODE_ENV === 'production';
     res.clearCookie('accessToken', {
       httpOnly: true,
@@ -70,7 +81,7 @@ export class AuthController {
       httpOnly: true,
       secure: isProduction,
       sameSite: isProduction ? 'none' : 'strict',
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: ONE_DAY_SECONDS * 1000,
       path: '/',
     });
   }
