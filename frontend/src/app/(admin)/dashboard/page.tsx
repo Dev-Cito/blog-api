@@ -102,8 +102,7 @@ export default function DashboardPage() {
     e.preventDefault();
     if (!newTag.trim()) return;
     try {
-      const slug = newTag.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-      const res = await api.post<ApiResponse<Tag>>('/tags', { name: newTag.trim(), slug });
+      const res = await api.post<ApiResponse<Tag>>('/tags', { name: newTag.trim() });
       setTags((prev) => [...prev, res.data.data]);
       setNewTag('');
     } catch {

@@ -7,6 +7,7 @@ import { User } from './users/entities/user.entity';
 import { Post } from './posts/entities/post.entity';
 import { Category } from './categories/entities/category.entity';
 import { Tag } from './tags/entities/tag.entity';
+import { RefreshToken } from './auth/entities/refresh-token.entity';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { PostsModule } from './posts/posts.module';
@@ -30,7 +31,7 @@ import { RedisModule } from './redis/redis.module';
         username: config.get('DB_USERNAME'),
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
-        entities: [User, Post, Category, Tag],
+        entities: [User, Post, Category, Tag, RefreshToken],
         synchronize: config.get('NODE_ENV') !== 'production',
         logging: config.get('NODE_ENV') === 'development',
         ssl: config.get('NODE_ENV') === 'production'

@@ -5,14 +5,50 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+let isRefreshing = false;
+let waitingQueue: Array<() => void> = [];
+
+const drainQueue = () => {
+  waitingQueue.forEach((resolve) => resolve());
+  waitingQueue = [];
+};
+
 api.interceptors.response.use(
   (res) => res,
   async (error) => {
-    if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login';
+    const original = error.config;
+
+    const is401 = error.response?.status === 401;
+    // Never try to refresh if the failing request was itself a refresh/login/register
+    const skipRefresh = ['/auth/refresh', '/auth/login', '/auth/register'].some(
+      (path) => original?.url?.includes(path)
+    );
+
+    if (is401 && !original._retry && !skipRefresh) {
+      original._retry = true;
+
+      if (isRefreshing) {
+        // Another request is already refreshing — queue this one
+        return new Promise((resolve, reject) => {
+          waitingQueue.push(() => {
+            api(original).then(resolve).catch(reject);
+          });
+        });
+      }
+
+      isRefreshing = true;
+      try {
+        await api.post('/auth/refresh');
+        drainQueue();
+        return api(original);
+      } catch {
+        waitingQueue = [];
+        return Promise.reject(error);
+      } finally {
+        isRefreshing = false;
       }
     }
+
     return Promise.reject(error);
   }
 );
