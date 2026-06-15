@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { User } from './users/entities/user.entity';
 import { Post } from './posts/entities/post.entity';
 import { Category } from './categories/entities/category.entity';
@@ -29,19 +30,20 @@ import { envValidationSchema } from './config/env.validation';
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
         entities: [User, Post, Category, Tag],
-        synchronize: true,
+        synchronize: config.get('NODE_ENV') !== 'production',
         logging: config.get('NODE_ENV') === 'development',
         ssl: config.get('NODE_ENV') === 'production'
           ? { rejectUnauthorized: false }
           : false,
       }),
     }),
-    ThrottlerModule.forRoot([{ ttl: 60000, limit: 100 }]),
+    ThrottlerModule.forRoot([{ name: 'default', ttl: 60000, limit: 100 }]),
     AuthModule,
     UsersModule,
     PostsModule,
     CategoriesModule,
     TagsModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
 })
 export class AppModule {}

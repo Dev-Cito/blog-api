@@ -7,6 +7,7 @@ import { CategoriesService } from './categories.service';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { AdminGuard } from '../auth/guards/admin.guard';
 
 @ApiTags('Categories')
 @Controller('categories')
@@ -14,9 +15,9 @@ export class CategoriesController {
   constructor(private categoriesService: CategoriesService) {}
 
   @Post()
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Create a category' })
+  @ApiOperation({ summary: 'Create a category (admin only)' })
   create(@Body() dto: CreateCategoryDto) {
     return this.categoriesService.create(dto);
   }
@@ -40,18 +41,18 @@ export class CategoriesController {
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiBearerAuth('JWT-auth')
-  @ApiOperation({ summary: 'Update a category' })
+  @ApiOperation({ summary: 'Update a category (admin only)' })
   update(@Param('id') id: string, @Body() dto: UpdateCategoryDto) {
     return this.categoriesService.update(id, dto);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, AdminGuard)
   @ApiBearerAuth('JWT-auth')
   @HttpCode(204)
-  @ApiOperation({ summary: 'Delete a category' })
+  @ApiOperation({ summary: 'Delete a category (admin only)' })
   remove(@Param('id') id: string) {
     return this.categoriesService.remove(id);
   }
