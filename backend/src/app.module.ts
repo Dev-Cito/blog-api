@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { CsrfGuard } from './auth/guards/csrf.guard';
+import { join } from 'path';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { User } from './users/entities/user.entity';
@@ -32,7 +34,9 @@ import { RedisModule } from './redis/redis.module';
         password: config.get('DB_PASSWORD'),
         database: config.get('DB_NAME'),
         entities: [User, Post, Category, Tag, RefreshToken],
-        synchronize: config.get('NODE_ENV') !== 'production',
+        migrations: [join(__dirname, 'database', 'migrations', '*.js')],
+        synchronize: false,
+        migrationsRun: true,
         logging: config.get('NODE_ENV') === 'development',
         ssl: config.get('NODE_ENV') === 'production'
           ? { rejectUnauthorized: false }
@@ -47,6 +51,9 @@ import { RedisModule } from './redis/redis.module';
     CategoriesModule,
     TagsModule,
   ],
-  providers: [{ provide: APP_GUARD, useClass: ThrottlerGuard }],
+  providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_GUARD, useClass: CsrfGuard },
+  ],
 })
 export class AppModule {}

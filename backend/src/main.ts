@@ -11,7 +11,21 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   app.use(cookieParser());
-  app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+  app.use(helmet({
+    crossOriginEmbedderPolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],   // Swagger UI inline handlers
+        styleSrc: ["'self'", "'unsafe-inline'"],    // Swagger UI inline styles
+        imgSrc: ["'self'", 'data:'],
+        workerSrc: ['blob:'],                       // Swagger UI web worker
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        frameAncestors: ["'none'"],
+      },
+    },
+  }));
 
   app.enableCors({
     origin: (origin, callback) => {

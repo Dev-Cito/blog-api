@@ -1,0 +1,27 @@
+import { CanActivate, ExecutionContext, ForbiddenException, Injectable } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { SKIP_CSRF_KEY } from '../decorators/skip-csrf.decorator';
+
+@Injectable()
+export class CsrfGuard implements CanActivate {
+  constructor(private reflector: Reflector) {}
+
+  canActivate(context: ExecutionContext): boolean {
+    const skip = this.reflector.getAllAndOverride<boolean>(SKIP_CSRF_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+    if (skip) return true;
+
+    const req = context.switchToHttp().getRequest();
+    if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return true;
+
+    const headerToken = req.headers['x-csrf-token'] as string | undefined;
+    const cookieToken = req.cookies?.csrfToken as string | undefined;
+
+    if (!headerToken || !cookieToken || headerToken !== cookieToken) {
+      throw new ForbiddenException('Invalid CSRF token');
+    }
+    return true;
+  }
+}

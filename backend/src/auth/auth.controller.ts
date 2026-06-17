@@ -2,6 +2,7 @@ import {
   Controller, Post, Get, Body,
   UseGuards, Request, HttpCode, Res, UnauthorizedException,
 } from '@nestjs/common';
+import { randomBytes } from 'crypto';
 import { Throttle } from '@nestjs/throttler';
 import { Response, Request as ExpressRequest } from 'express';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
@@ -11,6 +12,7 @@ import { RefreshTokenService } from './refresh-token.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { SkipCsrf } from './decorators/skip-csrf.decorator';
 
 const ACCESS_TTL_MS  = 15 * 60 * 1000;          // 15 minutes
 const ACCESS_TTL_SEC = 15 * 60;                  // for Redis blacklist TTL
@@ -26,6 +28,7 @@ export class AuthController {
   ) {}
 
   @Post('register')
+  @SkipCsrf()
   @Throttle({ default: { ttl: 60000, limit: 5 } })
   @ApiOperation({ summary: 'Register a new user' })
   async register(
@@ -38,6 +41,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @SkipCsrf()
   @HttpCode(200)
   @Throttle({ default: { ttl: 60000, limit: 10 } })
   @ApiOperation({ summary: 'Login' })
@@ -51,6 +55,7 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @SkipCsrf()
   @HttpCode(200)
   @Throttle({ default: { ttl: 60000, limit: 20 } })
   @ApiOperation({ summary: 'Refresh access token using refresh token cookie' })
@@ -91,6 +96,7 @@ export class AuthController {
     };
     res.clearCookie('accessToken', cookieOpts);
     res.clearCookie('refreshToken', cookieOpts);
+    res.clearCookie('csrfToken', { ...cookieOpts, httpOnly: false });
 
     return { message: 'Logged out successfully' };
   }
@@ -113,5 +119,13 @@ export class AuthController {
     };
     res.cookie('accessToken', accessToken, { ...base, maxAge: ACCESS_TTL_MS });
     res.cookie('refreshToken', refreshToken, { ...base, maxAge: REFRESH_TTL_MS });
+    // JS-readable CSRF token — double-submit cookie pattern
+    res.cookie('csrfToken', randomBytes(32).toString('hex'), {
+      httpOnly: false,
+      secure: isProduction,
+      sameSite: (isProduction ? 'none' : 'strict') as 'none' | 'strict',
+      path: '/',
+      maxAge: REFRESH_TTL_MS,
+    });
   }
 }

@@ -5,6 +5,24 @@ export const api = axios.create({
   withCredentials: true,
 });
 
+function getCsrfToken(): string | undefined {
+  if (typeof document === 'undefined') return undefined;
+  return document.cookie
+    .split('; ')
+    .find((row) => row.startsWith('csrfToken='))
+    ?.split('=')[1];
+}
+
+const SAFE_METHODS = new Set(['GET', 'HEAD', 'OPTIONS']);
+
+api.interceptors.request.use((config) => {
+  if (!SAFE_METHODS.has((config.method ?? 'GET').toUpperCase())) {
+    const token = getCsrfToken();
+    if (token) config.headers['X-CSRF-Token'] = token;
+  }
+  return config;
+});
+
 let isRefreshing = false;
 let waitingQueue: Array<() => void> = [];
 
