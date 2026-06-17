@@ -128,27 +128,21 @@ pnpm dev:frontend
 
 ---
 
-## 🔑 Seeded Accounts
-
-> These accounts are created by `pnpm seed`. Use them to log in immediately.
+## 🔑 Accounts
 
 ### 🛡️ Admin
-
 | Field | Value |
 |---|---|
-| **Email** | `admin@blog.com` |
-| **Password** | `Admin@123456` |
+| **Email** | `live@gmail.com` |
+| **Password** | `Live.123456` |
 | **Role** | `admin` |
-| **Access** | Full dashboard — manages all posts, categories, and tags |
 
-### ✍️ Author
-
+### ✍️ User
 | Field | Value |
 |---|---|
-| **Email** | `author@blog.com` |
-| **Password** | `Author@123456` |
+| **Email** | `olivier@gmail.com` |
+| **Password** | `Olivier.123456` |
 | **Role** | `user` |
-| **Access** | Manages own posts only |
 
 ---
 
