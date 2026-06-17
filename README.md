@@ -2,6 +2,16 @@
 
 A production-ready blog platform built with **NestJS** + **Next.js**, featuring JWT authentication, refresh token rotation, Redis-backed token blacklisting, CSRF protection, CSP headers, and TypeORM migrations.
 
+## 🌍 Live Demo
+
+| Service | URL |
+|---|---|
+| 🌐 **Frontend** | [blog-api-nine-chi.vercel.app](https://blog-api-nine-chi.vercel.app) |
+| ⚙️ **Backend API** | [blog-api-0pjk.onrender.com/api](https://blog-api-0pjk.onrender.com/api) |
+| 📚 **Swagger Docs** | [blog-api-0pjk.onrender.com/api/docs](https://blog-api-0pjk.onrender.com/api/docs) |
+
+> The backend runs on Render's free tier — it may take ~30s to wake up on first request.
+
 ---
 
 ## 🗂️ Project Structure
@@ -315,12 +325,34 @@ pnpm build:frontend   # Build Next.js for production
 ---
 
 
+## ☁️ Production Deployment
+
+| Service | Platform | Notes |
+|---|---|---|
+| 🌐 Frontend | [Vercel](https://vercel.com) | Auto-deploys on `git push` to `main` |
+| ⚙️ Backend | [Render](https://render.com) | Free tier — spins down after 15 min inactivity |
+| 🗄️ Database | [Neon](https://neon.tech) | Serverless PostgreSQL, free tier |
+| ⚡ Cache | [Render Key Value](https://render.com) | Redis-compatible, free tier |
+
+### Redeploy frontend
+```bash
+npx vercel --prod   # from project root
+```
+
+### Promote a user to admin
+Run in the [Neon SQL Editor](https://console.neon.tech):
+```sql
+UPDATE users SET role = 'admin' WHERE email = 'your@email.com';
+```
+
+---
+
 ## 📚 Resources
 
 - [NestJS Docs](https://docs.nestjs.com)
 - [Next.js Docs](https://nextjs.org/docs)
 - [TypeORM Docs](https://typeorm.io)
-- [Swagger UI](http://localhost:3002/api/docs)
+- [Swagger Docs (live)](https://blog-api-0pjk.onrender.com/api/docs)
 
 ---
 
