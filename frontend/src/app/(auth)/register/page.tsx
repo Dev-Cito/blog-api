@@ -16,9 +16,12 @@ export default function RegisterPageRoute() {
       await api.post('/auth/register', { name, email, password });
       const meRes = await api.get('/auth/me');
       setAuth(meRes.data.data);
+      const secure = window.location.protocol === 'https:' ? '; secure' : '';
+      document.cookie = `session=1; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax${secure}`;
       router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.response?.data?.message ?? 'Something went wrong');
+    } catch (err: unknown) {
+      const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
+      setError(message ?? 'Something went wrong');
     }
   };
 

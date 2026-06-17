@@ -15,6 +15,7 @@ export default function Navbar() {
     try {
       await api.post('/auth/logout');
     } finally {
+      document.cookie = 'session=; path=/; max-age=0; samesite=lax';
       clearAuth();
       router.push('/login');
     }

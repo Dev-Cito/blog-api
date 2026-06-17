@@ -43,6 +43,7 @@ export default function DashboardPage() {
           setTags(tagRes.data.data);
         }
       } catch {
+        document.cookie = 'session=; path=/; max-age=0; samesite=lax';
         clearAuth();
         router.push('/login');
       } finally {

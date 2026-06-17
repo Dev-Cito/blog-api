@@ -16,6 +16,8 @@ export default function LoginPageRoute() {
       await api.post('/auth/login', { email, password });
       const meRes = await api.get('/auth/me');
       setAuth(meRes.data.data);
+      const secure = window.location.protocol === 'https:' ? '; secure' : '';
+      document.cookie = `session=1; path=/; max-age=${7 * 24 * 60 * 60}; samesite=lax${secure}`;
       router.push('/dashboard');
     } catch {
       setError('Invalid email or password');
